@@ -1,7 +1,170 @@
-<html>
-	<head>
-	</head>
-	<body>
-		Project 1 here
-	</body>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
+<head>
+<style>
+  body {
+    padding: 100px;
+    width: 1000px;
+    margin: auto;
+    text-align: left;
+    font-weight: 300;
+    font-family: 'Open Sans', sans-serif;
+    color: #121212;
+  }
+  h1, h2, h3, h4 {
+    font-family: 'Source Sans Pro', sans-serif;
+  }
+</style>
+<title>CS 184 Rasterizer</title>
+<meta http-equiv="content-type" content="text/html; charset=utf-8" />
+<link href="https://fonts.googleapis.com/css?family=Open+Sans|Source+Sans+Pro" rel="stylesheet">
+</head>
+
+
+<body>
+
+<h1 align="middle">CS 184: Computer Graphics and Imaging, Spring 2018</h1>
+<h1 align="middle">Project 1: Rasterizer</h1>
+<h2 align="middle">Alison Siebert, CS184-??</h2>
+
+<br><br>
+
+<div>
+
+<h2 align="middle">Overview</h2>
+<p>In this project, I experimented and learned a lot about rasterization and sampling techniques. It was very interesting to be able to apply what I learned in lecture on a project that I could visualize dynamically.
+    </p>
+
+<h2 align="middle">Section I: Rasterization</h2>
+
+<h3 align="middle">Part 1: Rasterizing single-color triangles</h3>
+
+<p>For task 1, I rasterized triangles using a basic sampling method that tested if the center of every pixel was inside the triangle. 
+   I created a bounding box using the min and max of the x and y coordinates of the three triangle points, therefore the algorithm would only check samples that lie within the bounding box of the triangle.
+    Using the three line test described in lecture, I created a helper function that calculated wheter the point was inside the triangle.
+    One bug that I encountered in this step was not accounting for the direction (clockwise or counterclockwise) of the three points, which changes the calculations of the line tests.
+    To fix this, I checked whether the three line calculations were either all >=0 or all <= 0.
+    </p>
+
+<p>As seen in the results below, there was a lot of aliasing and jaggies in the triangles produced, which was expected. </p>
+
+<div align="middle">
+  <table style="width=100%">
+    <tr>
+      <td>
+        <img src="images/pt1_1.png" align="middle" width="500px"/>
+        <figcaption align="middle">Blue Triangle</figcaption>
+      </td>
+      <td>
+        <img src="images/pt1_2.png" align="middle" width="500px"/>
+        <figcaption align="middle">Green Triangle</figcaption>
+      </td>
+    </tr>
+    <br> 
+    <tr>
+      <td>
+        <img src="images/pt1_3.png" align="middle" width="500px"/>
+        <figcaption align="middle">Red Triangle</figcaption>
+      </td>
+      <td>
+        <img src="images/pt1_4.png" align="middle" width="500px"/>
+        <figcaption align="middle">Purple Triangle</figcaption>
+      </td>
+    </tr>
+  </table>
+</div>
+
+
+<h3 align="middle">Part 2: Antialiasing triangles</h3>
+
+<p>For this part, I implemented a supersampling algorithm to antialias the triangles.
+    This algorithm samples multiple times per pixel in part 1 based on a set sampling rate.
+    For example, for a sampling rate of four, it will sample four times in one pixel by splitting it into a 2x2 grid (sqrt(sampling_rate) X sqrt(sampling_rate)).
+    After rasterization, the color of the pixel in the final result is achieved by taking the average of these four subsamples.
+    </p>
+<p>
+    In order to achieve these results and support supersampling, I first resized the sample_buffer (multiplied by sample rate).
+    I then modified the rasterize_triangle function by adding extra for loops to create the subpixels and recalculated the centers and coordinates for each. 
+    This method called fill_pixel, which calculated the index to store the color of each subpixel.
+    The resolve_to_framebuffer method averaged the colors of all the subpixels for each pixel to repopulate the framebuffer.
+</p>
+<p>
+    Supersampling is useful because as seen in the results below, it creates smoother lines with the blurred gradient of colors and reduces aliasing/jaggies from part 1.
+
+</p>
+
+<div align="middle">
+    <table style="width=100%">
+        <tr>
+            <td>
+                <img src="images/sample1.png" align="middle" width="400px" />
+                <figcaption align="middle">Sample Rate 1</figcaption>
+            </td>
+            <td>
+                <img src="images/sample4.png" align="middle" width="400px" />
+                <figcaption align="middle">Sample Rate 4</figcaption>
+            </td>
+        </tr>
+        <br />
+        <tr>
+            <td>
+                <img src="images/sample16.png" align="middle" width="400px" />
+                <figcaption align="middle">Sample Rate 16</figcaption>
+            </td>
+        </tr>
+    </table>
+</div>
+
+<h3 align="middle">Part 3: Transforms</h3>
+
+<p>
+    For my robot, I modified the original robot to make its limbs more cubed, changed the color to purple, and positioned its arms in a diagonal way rather than straight across.
+    I achieved this by using rotate and scale for the head, and scale and transform for the limbs. For the color, I changed the HEX codes to purple.
+</p>
+
+<div align="middle">
+    <table style="width=100%">
+        <tr>
+            <td>
+                <img src="images/robo.png" align="middle" width="400px" />
+                <figcaption align="middle">Original Robot</figcaption>
+            </td>
+            <td>
+                <img src="images/robott.png" align="middle" width="400px" />
+                <figcaption align="middle">My Robot</figcaption>
+            </td>
+        </tr>
+    </table>
+</div>
+
+<h2 align="middle">Section II: Sampling</h2>
+
+<h3 align="middle">Part 4: Barycentric coordinates</h3>
+
+<p>Barycentric coordinates are a coordinate system for triangles used to interpolate (or proportionally "blend") values at the triangle vertices based on a weighted average.
+    The results are visualized below using colors as the values.
+    </p>
+
+
+<h3 align="middle">Part 5: "Pixel sampling" for texture mapping</h3>
+
+<p>Pixel sampling is a way to map coordinates from a texture.</p>
+<p>
+    Nearest pixel sampling takes the nearest pixel coordinate to sample. 
+    On the other hand, bilinear pixel sampling takes four of the nearest pixels to the coordinate and linearly interpolates (LERP) with a weighted average.
+</p>
+
+<h3 align="middle">Part 6: "Level sampling" with mipmaps for texture mapping</h3>
+<p>
+    Level sampling samples from mipmaps of different levels of downsampled textures. 
+</p>
+
+
+
+<h2 align="middle">Section III: Art Competition</h2>
+<p>If you are not participating in the optional art competition, don't worry about this section!</p>
+
+<h3 align="middle">Part 7: Draw something interesting!</h3>
+
+</body>
 </html>
