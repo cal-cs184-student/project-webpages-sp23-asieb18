@@ -32,7 +32,9 @@
             In the first part, I implemented BSDFs for two more materials: mirror and glass.
             I did this by adding reflection for the mirror and refraction for glass.
 
-            For the second part, I ... (work in progress)
+            For the second part, I implemented depth of field with a thin-lens model. 
+            Compared to the previous model of a pinhole camera, the focus of the images changes based on focal depth and aperture.
+            In my observations, the focal depth affects which part of the model is in focus, while the aperture affects the level of blurriness.
         </p>
 
         <p>
@@ -123,7 +125,7 @@
 
         <p>
             At max ray depth 4, we can observe that the reflection of the right sphere in the left sphere now has color and more details.
-            The values in the image also appear brighter. 
+            The values in the image also appear brighter.
 
 
         </p>
@@ -143,112 +145,99 @@
 
         </p>
 
-
-        <h3 align="middle">Part 2. Microfacet Material</h3>
-        <p>
-            <b>
-                Show a screenshot sequence of 4 images of scene `CBdragon_microfacet_au.dae` rendered with $\alpha$ set to 0.005, 0.05, 0.25 and 0.5. The other settings should be at least 128 samples per pixel and 1 samples per light. The number of bounces should be at least 5. Describe the differences between different images. Note that, to change the $\alpha$, just open the .dae file and search for `microfacet`.
-            </b>
-        </p>
-        <p>
-            Your response goes here.
-        </p>
         <br />
-        <p>
-            <b>
-                Show two images of scene `CBbunny_microfacet_cu.dae` rendered using cosine hemisphere sampling (default) and your importance sampling. The sampling rate should be fixed at 64 samples per pixel and 1 samples per light. The number of bounces should be at least 5. Briefly discuss their difference.
-            </b>
-        </p>
-        <p>
-            Your response goes here.
-        </p>
-        <br />
-        <p>
-            <b>
-                Show at least one image with some other conductor material, replacing `eta` and `k`. Note that you should look up values for real data rather than modifying them arbitrarily. Tell us what kind of material your parameters correspond to.
-            </b>
-        </p>
-        <p>
-            Your response goes here.
-        </p>
-        <br />
-
-
-
-
-        <h3 align="middle">Part 3. Environment Lightl</h3>
-        <b>Pick one *.exr* file to use for all subparts here. Include a converted *.jpg* of it in your website so we know what map you are using.</b>
-
-        <p>
-            <b>
-                In a few sentences, explain the ideas behind environment lighting (i.e. why we do it/how it works).
-            </b>
-        </p>
-        <p>
-            Your response goes here.
-        </p>
-        <br />
-        <p>
-            <b>
-                Show the *probability_debug.png* file for the *.exr* file you are using, generated using the `save_probability_debug()` helper function after initializing your probability distributions.
-            </b>
-        </p>
-        <p>
-            Your response goes here.
-        </p>
-        <br />
-        <p>
-            <b>
-                Use the `bunny_unlit.dae` scene and your environment map *.exr* file and render two pictures, one with uniform sampling and one with importance sampling. Use 4 samples per pixel and 64 samples per light in each. Compare noise levels. Make sure to include all screenshots.
-            </b>
-        </p>
-        <p>
-            Your response goes here.
-        </p>
-        <br />
-        <p>
-            <b>
-                Use a different image (if you did part 2, we recommend `bunny_microfacet_cu_unlit.dae`) and your environment map *.exr* file and render two pictures, one with uniform sampling and one with importance sampling. Use 4 samples per pixel and 64 samples per light in each. Compare noise levels. Make sure to include all screenshots.
-            </b>
-        </p>
-        <p>
-            Your response goes here.
-        </p>
-        <br />
-
-
 
         <h3 align="middle">Part 4. Depth of Field</h3>
-        <b>
-            For these subparts, we recommend using a microfacet BSDF scene to show off the cool out of focus effects you can get with depth of field!
-        </b>
         <p>
-            <b>
-                In a few sentences, explain the differences between a pinhole camera model and a thin-lens camera model.
-            </b>
+            In this part, I implemented depth of field using a thin-lens camera model (opposed to the original pinhole camera model).
+            The difference between these two types of camera models is that for a pinhole camera, the entire image is in focus.
+            However, for a thin-lens camera, the focus of the image is dependent on aperture and focal distance.
+            In this model, we have to account for the direction of the ray changing once it passes through the lens rather than going straight through a pinhole.
+            Rather than the origin being (0, 0, 0), the lens can receive radiance from any point on the lens.
+
         </p>
-        <p>
-            Your response goes here.
-        </p>
+
         <br />
         <p>
             <b>
-                Show a "focus stack" where you focus at 4 visibly different depths through a scene. Make sure to include all screenshots.
+                Below is a "focus stack" displaying a scene of a dragon at 4 visibly different depths (as labeled).
+                All images were rendered with 0.23 aperature, 513 samples/pixel, 4 samples/light, and a max ray depth of 12.
             </b>
         </p>
+        <div align="center">
+            <table style="width=100%">
+                <tr>
+                    <td>
+                        <img src="images/dragon_focal_35.png" align="middle" width="500" />
+                        <figcaption align="center">focal depth = 3.5 </figcaption>
+                    </td>
+                    <td>
+                        <img src="images/dragon_focal_45.png" align="middle" width="500" />
+                        <figcaption align="center">focal depth = 4.5</figcaption>
+                    </td>
+                </tr>
+                <tr>
+                    <td>
+                        <img src="images/dragon_focal_5.png" align="middle" width="500" />
+                        <figcaption align="center">focal depth = 5.0</figcaption>
+                    </td>
+                    <td>
+                        <img src="images/dragon_focal_55.png" align="middle" width="500" />
+                        <figcaption align="center">focal depth = 5.5</figcaption>
+                    </td>
+                </tr>
+            </table>
+        </div>
+
+        <br />
+
         <p>
-            Your response goes here.
+            As shown in the focus stack, the image is blurry when the focal depth is at 3.5. 
+            At 4.5, the front of the dragon is in focus, while the rest is blurry.
+            At 5.0, the back furthest part of the dragon is in focus while the rest is blurry. 
+            At a focal depth of 5.5, the entire image is blurry again. 
         </p>
+
         <br />
         <p>
             <b>
-                Show a sequence of 4 pictures with visibly different aperture sizes, all focused at the same point in a scene. Make sure to include all screenshots.
+                Below is a sequence of 4 pictures of a dragon at visibly different aperture sizes.
+                All images were rendered with 4.5 focal depth, 513 samples/pixel, 4 samples/light, and a max ray depth of 12.
             </b>
         </p>
-        <p>
-            Your response goes here.
-        </p>
+
+        <div align="center">
+            <table style="width=100%">
+                <tr>
+                    <td>
+                        <img src="images/dragon_aperature_23.png" align="middle" width="500" />
+                        <figcaption align="center">aperture = 0.23 </figcaption>
+                    </td>
+                    <td>
+                        <img src="images/dragon_aperture_46.png" align="middle" width="500" />
+                        <figcaption align="center">aperture = 0.46</figcaption>
+                    </td>
+                </tr>
+                <tr>
+                    <td>
+                        <img src="images/dragon_aperture_69.png" align="middle" width="500" />
+                        <figcaption align="center">aperture = 0.69</figcaption>
+                    </td>
+                    <td>
+                        <img src="images/dragon_aperture_123.png" align="middle" width="500" />
+                        <figcaption align="center">aperture = 1.23</figcaption>
+                    </td>
+                </tr>
+            </table>
+        </div>
+
         <br />
+
+        <p>
+            With the various aperture sizes above, we can see how an image becomes more blurry at a higher aperture.
+            The dragon image is most in focus at the lowest aperature of 0.23.
+            However, as the aperature increases, the dragon becomes increasingly blurry. 
+        </p>
 
     </div>
 </body>
